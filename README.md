@@ -1,36 +1,249 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ProofMarket 📊
 
-## Getting Started
+**Prediction Markets for Startup Milestones**
 
-First, run the development server:
+A decentralized platform where founders create transparent prediction markets for their startup milestones, and investors/communities bet on execution.
+
+![Built on BNB Chain](https://img.shields.io/badge/Built%20on-BNB%20Chain-F0B90B?style=for-the-badge&logo=binance)
+![Next.js](https://img.shields.io/badge/Next.js-16-black?style=for-the-badge&logo=next.js)
+![TypeScript](https://img.shields.io/badge/TypeScript-blue?style=for-the-badge&logo=typescript)
+
+## 🎯 Overview
+
+ProofMarket turns startup execution into transparent, verifiable markets. Founders stake tokens on their milestones, while investors and community members bet YES or NO on whether these milestones will be achieved.
+
+### Key Features
+
+- 🎪 **Binary Prediction Markets** - YES/NO betting on milestone completion
+- 💰 **Skin in the Game** - Founders must stake BNB to create markets
+- 🏆 **Winner Takes All** - Proportional rewards from total pool
+- 🔒 **On-Chain Resolution** - Transparent oracle-based outcome determination
+- ⚡ **Built on BNB Chain** - Fast, low-cost transactions
+
+## 🚀 Quick Start
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+# Install dependencies
+pnpm install
+
+# Set up environment variables
+cp .env.example .env.local
+# Add your WalletConnect Project ID and Contract Address
+
+# Run development server
 pnpm dev
-# or
-bun dev
+
+# Visit http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 📖 Documentation
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **[Deployment Guide](./DEPLOYMENT.md)** - Complete setup and deployment instructions
+- **[MVP Specification](./proof_of_execution_mvp.md)** - Product concept and architecture
+- **[Smart Contract](./contracts/MilestonePrediction.sol)** - Solidity contract code
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🏗️ Tech Stack
 
-## Learn More
+### Frontend
+- **Framework**: Next.js 16 (App Router)
+- **Styling**: TailwindCSS
+- **Web3**: Wagmi, Viem, RainbowKit
+- **Language**: TypeScript
 
-To learn more about Next.js, take a look at the following resources:
+### Smart Contract
+- **Language**: Solidity ^0.8.24
+- **Chain**: BNB Smart Chain (BSC)
+- **Token**: Native BNB
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🎮 How It Works
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 1. Create a Market
+Founders create milestone markets by:
+- Setting a clear milestone description
+- Choosing a deadline
+- Staking BNB to show commitment
 
-## Deploy on Vercel
+### 2. Place Bets
+Community members bet on the outcome:
+- **Bet YES** - Milestone will be achieved
+- **Bet NO** - Milestone won't be achieved
+- Potential returns shown in real-time
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 3. Resolution
+After the deadline:
+- Market is locked (anyone can trigger)
+- Oracle resolves YES or NO
+- Winners claim proportional rewards
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### 4. Claim Rewards
+Winners receive:
+```
+Payout = (Total Pool) × (Your Bet / Winning Pool)
+```
+
+## 📁 Project Structure
+
+```
+proofmarket/
+├── app/                      # Next.js app directory
+│   ├── markets/             # Market pages
+│   │   ├── page.tsx         # Markets listing
+│   │   ├── create/          # Create market
+│   │   └── [marketId]/      # Individual market
+│   ├── admin/               # Admin panel
+│   │   └── markets/         # Market resolution
+│   └── layout.tsx           # Root layout with providers
+├── components/              # React components
+│   ├── ui/                  # Base UI components
+│   ├── MarketCard.tsx       # Market display card
+│   ├── BetPanel.tsx         # Betting interface
+│   ├── ClaimPanel.tsx       # Reward claiming
+│   └── CreateMarketForm.tsx # Market creation form
+├── lib/                     # Utilities
+│   ├── web3/               # Web3 configuration
+│   │   ├── wagmiConfig.ts  # Wagmi setup
+│   │   └── contracts.ts    # Contract ABI & address
+│   └── types.ts            # TypeScript types
+└── contracts/              # Smart contracts
+    └── MilestonePrediction.sol
+```
+
+## 🎨 User Flows
+
+### Founder Flow
+1. Connect wallet
+2. Navigate to "Create Market"
+3. Fill in milestone details
+4. Set deadline and stake amount
+5. Submit transaction
+6. Share market with community
+
+### Bettor Flow
+1. Connect wallet
+2. Browse markets
+3. Click on interesting market
+4. Review milestone details
+5. Bet YES or NO with BNB amount
+6. Wait for resolution
+7. Claim rewards if won
+
+### Oracle Flow (Admin)
+1. Connect wallet (must be oracle address)
+2. Go to Admin panel
+3. Lock markets after deadline
+4. Review milestone completion
+5. Resolve to YES or NO
+6. Winners can now claim
+
+## 🔧 Environment Variables
+
+Create `.env.local` with:
+
+```bash
+NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID=your_project_id
+NEXT_PUBLIC_CONTRACT_ADDRESS=0x...deployed_contract_address
+```
+
+## 🧪 Testing
+
+### Local Testing
+1. Deploy contract to BSC Testnet (see DEPLOYMENT.md)
+2. Get testnet BNB from faucet
+3. Create test market
+4. Place test bets
+5. Advance time past deadline
+6. Lock and resolve market
+7. Claim rewards
+
+### Testnet Details
+- **Chain ID**: 97
+- **RPC**: https://data-seed-prebsc-1-s1.binance.org:8545/
+- **Faucet**: https://testnet.binance.org/faucet-smart
+- **Explorer**: https://testnet.bscscan.com
+
+## 🛠️ Development
+
+```bash
+# Run development server
+pnpm dev
+
+# Build for production
+pnpm build
+
+# Run production build
+pnpm start
+
+# Lint code
+pnpm lint
+```
+
+## 📊 Smart Contract
+
+The `MilestonePrediction` contract provides:
+
+- `createMarket()` - Create new milestone market
+- `betYes()` - Bet YES on a market
+- `betNo()` - Bet NO on a market
+- `lockMarket()` - Lock market after deadline
+- `resolveMarket()` - Oracle resolves outcome
+- `claimReward()` - Claim winnings
+- `calculatePotentialPayout()` - View potential returns
+
+See [contracts/MilestonePrediction.sol](./contracts/MilestonePrediction.sol) for full implementation.
+
+## 🗺️ Roadmap
+
+### MVP (Current)
+- ✅ Binary prediction markets
+- ✅ BNB betting
+- ✅ Manual oracle resolution
+- ✅ Basic UI with RainbowKit
+
+### Phase 2
+- [ ] IPFS metadata storage
+- [ ] The Graph indexing
+- [ ] GitHub milestone verification
+- [ ] Reputation NFTs
+- [ ] Market categories
+
+### Phase 3
+- [ ] Multi-oracle consensus
+- [ ] Dispute resolution
+- [ ] VC dashboards
+- [ ] AI credibility scoring
+- [ ] Notion integration
+
+## ⚠️ Security Notice
+
+This is an MVP for demonstration purposes. Before production deployment:
+
+- ✅ Audit smart contract
+- ✅ Add access controls
+- ✅ Implement emergency pause
+- ✅ Add dispute mechanism
+- ✅ Test extensively on testnet
+- ✅ Consider bug bounty program
+
+## 📄 License
+
+MIT
+
+## 🤝 Contributing
+
+Contributions welcome! Please:
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
+
+## 📞 Support
+
+- Open an issue on GitHub
+- Review the [Deployment Guide](./DEPLOYMENT.md)
+- Check BSCScan for contract state
+
+---
+
+**Built fast. Iterate faster.** 🚀
+
+*ProofMarket - Where execution meets accountability*

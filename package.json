@@ -4,23 +4,43 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build --webpack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "deploy:testnet": "hardhat run scripts/deploy.js --network bscTestnet",
+    "deploy:mainnet": "hardhat run scripts/deploy.js --network bscMainnet",
+    "compile": "hardhat compile"
   },
   "dependencies": {
+    "@rainbow-me/rainbowkit": "^2.2.9",
+    "@reown/appkit": "^1.8.14",
+    "@reown/appkit-adapter-wagmi": "^1.8.14",
+    "@tanstack/react-query": "^5.90.8",
+    "@wagmi/core": "^2.22.1",
+    "networks": "link:@reown/appkit/networks",
     "next": "16.0.3",
     "react": "19.2.0",
-    "react-dom": "19.2.0"
+    "react-dom": "19.2.0",
+    "viem": "~2.39.0",
+    "wagmi": "^2.19.4"
   },
   "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@nomicfoundation/hardhat-verify": "^2.1.3",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv": "^17.2.3",
     "eslint": "^9",
     "eslint-config-next": "16.0.3",
+    "hardhat": "^2.27.0",
     "tailwindcss": "^4",
+    "tap": "^18.0.0",
+    "tape": "^5.8.0",
+    "pino-elasticsearch": "^7.0.0",
+    "why-is-node-running": "^2.2.2",
+    "fastbench": "^1.0.1",
     "typescript": "^5"
   }
 }

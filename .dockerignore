@@ -1,0 +1,16 @@
+.git
+.gitignore
+.cursor
+.cursorignore
+node_modules
+npm-debug.log
+pnpm-debug.log
+.next/cache
+.next/dev
+.DS_Store
+.env.local
+.env.*
+!.env.example
+!.env.production
+
+
