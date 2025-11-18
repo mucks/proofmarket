@@ -17,7 +17,17 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Ship or Die - Prediction Markets for Startup Milestones",
-  description: "Bet on startup execution. Create transparent prediction markets for milestones.",
+  description: "Ship or Die turns startup milestones into on-chain prediction markets.",
+  openGraph: {
+    title: "Ship or Die - Prediction Markets for Startup Milestones",
+    description: "Ship or Die turns startup milestones into on-chain prediction markets.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Ship or Die - Prediction Markets for Startup Milestones",
+    description: "Ship or Die turns startup milestones into on-chain prediction markets.",
+  },
 };
 
 export default function RootLayout({

@@ -120,21 +120,15 @@ async function main() {
     throw new Error(`Expected 6 wallets but found ${wallets.length}. Please delete testnet-wallets.json and run again.`);
   }
 
-  // Calculate required BNB per wallet
-  // Each wallet needs: creator stake + gas buffer (~0.02 BNB for startup creation + market creation + transactions)
-  const gasBuffer = parseEther('0.02');
-  const walletRequirements = FEATURED_MARKETS.slice(0, 5).map((market, i) => ({
-    walletIndex: i + 1,
-    wallet: wallets[i + 1],
-    creatorStake: parseEther(market.creatorStake),
-    requiredBNB: parseEther(market.creatorStake) + gasBuffer,
-    market: market,
-  }));
-
-  // Calculate total required
-  const totalRequired = walletRequirements.reduce((sum, req) => sum + req.requiredBNB, BigInt(0));
+  // Calculate required BNB for distribution to other wallets
+  // Each wallet needs a small amount for potential future use (0.01 BNB each)
+  const amountPerWallet = parseEther('0.01');
   const distributionGasEstimate = parseEther('0.01'); // Estimate for 5 distribution transactions
-  const totalNeededInWallet1 = totalRequired + distributionGasEstimate;
+  const totalForDistribution = amountPerWallet * BigInt(5) + distributionGasEstimate;
+  
+  // We'll use the remaining balance in Wallet 1 to create markets
+  // So we only need enough for distribution
+  const totalNeededInWallet1 = totalForDistribution;
 
   // Main wallet (wallet 1) - user will fund this manually
   const mainWallet = wallets[0];
@@ -142,14 +136,13 @@ async function main() {
   console.log('⚠️  ACTION REQUIRED: Fund Wallet 1 with BNB');
   console.log('═══════════════════════════════════════════════════════════════');
   console.log(`📍 Wallet 1 Address: ${mainWallet.address}`);
-  console.log(`💰 Required: ${formatEther(totalNeededInWallet1)} BNB (minimum)`);
-  console.log(`   Breakdown:`);
-  walletRequirements.forEach(req => {
-    console.log(`   - Wallet ${req.walletIndex}: ${formatEther(req.requiredBNB)} BNB (${formatEther(req.creatorStake)} stake + gas)`);
-  });
+  console.log(`💰 Minimum required: ${formatEther(totalNeededInWallet1)} BNB (for wallet distribution)`);
+  console.log(`   - Distribution to 5 wallets: ${formatEther(amountPerWallet * BigInt(5))} BNB`);
   console.log(`   - Distribution gas: ${formatEther(distributionGasEstimate)} BNB`);
+  console.log(`💡 Remaining balance will be used to create markets`);
+  console.log(`   (Each market needs ~0.015 BNB: 0.01 stake + 0.005 gas)`);
   console.log(`🔗 BSCScan: https://testnet.bscscan.com/address/${mainWallet.address}`);
-  console.log(`💡 You can fund with more for safety (recommended: ${formatEther(totalNeededInWallet1 + parseEther('0.05'))} BNB)`);
+  console.log(`💡 Recommended: Fund with 0.2 BNB to create ~10 markets`);
   console.log('═══════════════════════════════════════════════════════════════\n');
 
   // Wait for user confirmation
@@ -196,112 +189,56 @@ async function main() {
     );
   }
 
-  // Distribute BNB to other wallets based on their requirements
+  // Distribute small amount to other wallets (for potential future use)
   console.log('💸 Distributing BNB to other wallets...\n');
 
-  for (const req of walletRequirements) {
-    const targetWallet = req.wallet;
+  for (let i = 1; i < 6; i++) {
+    const targetWallet = wallets[i];
     try {
-      console.log(`  Sending ${formatEther(req.requiredBNB)} BNB to Wallet ${req.walletIndex} (${targetWallet.address})...`);
-      console.log(`     For: ${req.market.title}`);
-      console.log(`     Creator stake: ${formatEther(req.creatorStake)} BNB + gas buffer`);
+      console.log(`  Sending ${formatEther(amountPerWallet)} BNB to Wallet ${i + 1} (${targetWallet.address})...`);
       
       const hash = await mainWalletClient.sendTransaction({
         to: targetWallet.address,
-        value: req.requiredBNB,
+        value: amountPerWallet,
       });
 
       // Wait for transaction
       await publicClient.waitForTransactionReceipt({ hash });
       console.log(`  ✅ Transaction confirmed: ${hash}\n`);
     } catch (error) {
-      console.error(`  ❌ Failed to send to wallet ${req.walletIndex}:`, error.message);
+      console.error(`  ❌ Failed to send to wallet ${i + 1}:`, error.message);
       throw error;
     }
   }
 
   console.log('✅ BNB distribution complete!\n');
 
-  // Create startups
-  console.log('🏢 Creating startups from mock data...\n');
-  const startupIds = [];
+  // Check remaining balance in main wallet
+  const remainingBalance = await publicClient.getBalance({ address: mainWallet.address });
+  console.log(`💰 Remaining balance in Wallet 1: ${formatEther(remainingBalance)} BNB\n`);
 
-  for (let i = 0; i < Math.min(FEATURED_STARTUPS.length, 5); i++) {
-    const startup = FEATURED_STARTUPS[i];
-    const wallet = wallets[i + 1]; // Use wallets 2-6 for startups
-    const walletClient = createWalletClient({
-      account: wallet,
-      chain: bscTestnet,
-      transport: http(),
-    });
+  // Calculate how many markets we can create with remaining balance
+  // Each market needs: creator stake (0.01 BNB) + gas (~0.005 BNB) = ~0.015 BNB
+  const costPerMarket = parseEther('0.015');
+  const maxMarkets = Math.floor(Number(remainingBalance) / Number(costPerMarket));
+  const marketsToCreate = Math.min(maxMarkets, FEATURED_MARKETS.length);
 
-    try {
-      console.log(`  Creating startup: ${startup.name} (Wallet ${i + 2})...`);
-      const hash = await walletClient.writeContract({
-        address: CONTRACT_ADDRESS,
-        abi: MILESTONE_PREDICTION_ABI,
-        functionName: 'createStartup',
-        args: [
-          startup.name,
-          startup.description,
-          startup.category,
-          startup.stage,
-          startup.website,
-        ],
-      });
-
-      const receipt = await publicClient.waitForTransactionReceipt({ hash });
-      
-      // Extract startup ID from event
-      const startupCreatedEvent = receipt.logs.find(log => {
-        try {
-          const decoded = decodeEventLog({
-            abi: MILESTONE_PREDICTION_ABI,
-            data: log.data,
-            topics: log.topics,
-          });
-          return decoded.eventName === 'StartupCreated';
-        } catch {
-          return false;
-        }
-      });
-
-      if (startupCreatedEvent) {
-        const decoded = decodeEventLog({
-          abi: MILESTONE_PREDICTION_ABI,
-          data: startupCreatedEvent.data,
-          topics: startupCreatedEvent.topics,
-        });
-        const startupId = Number(decoded.args.startupId);
-        startupIds.push({ startupId, name: startup.name, category: startup.category, wallet: wallet.address });
-        console.log(`  ✅ Startup created with ID: ${startupId}`);
-        console.log(`     Transaction: ${hash}\n`);
-      } else {
-        console.log(`  ⚠️  Startup created but couldn't extract ID`);
-        console.log(`     Transaction: ${hash}\n`);
-      }
-    } catch (error) {
-      console.error(`  ❌ Failed to create startup ${startup.name}:`, error.message);
-      throw error;
-    }
+  if (marketsToCreate === 0) {
+    console.log('⚠️  Insufficient balance to create markets. Need at least 0.015 BNB per market.');
+    console.log('═══════════════════════════════════════════════════════════════');
+    console.log('✅ Seed script completed (no markets created)');
+    console.log('═══════════════════════════════════════════════════════════════\n');
+    return;
   }
 
-  // Create markets
-  console.log('📊 Creating markets from mock data...\n');
+  console.log(`📊 Creating ${marketsToCreate} markets with remaining balance...\n`);
 
-  for (let i = 0; i < Math.min(FEATURED_MARKETS.length, 5); i++) {
+  let marketsCreated = 0;
+
+  for (let i = 0; i < marketsToCreate; i++) {
     const market = FEATURED_MARKETS[i];
-    const wallet = wallets[i + 1]; // Use wallets 2-6 for markets
-    const walletClient = createWalletClient({
-      account: wallet,
-      chain: bscTestnet,
-      transport: http(),
-    });
+    const walletClient = mainWalletClient; // Use main wallet for all markets
 
-    // Find matching startup ID and category
-    const startupData = startupIds.find(s => s.name === market.startupName);
-    const startupId = startupData ? BigInt(startupData.startupId) : BigInt(0);
-    
     // Find category from FEATURED_STARTUPS
     const startupInfo = FEATURED_STARTUPS.find(s => s.name === market.startupName);
     const category = startupInfo?.category || 'AI';
@@ -316,15 +253,22 @@ async function main() {
     const deadline = BigInt(Math.floor(market.deadline.getTime() / 1000));
     const creatorStake = parseEther(market.creatorStake);
 
+    // Check if we have enough balance
+    const currentBalance = await publicClient.getBalance({ address: mainWallet.address });
+    if (currentBalance < creatorStake + parseEther('0.005')) {
+      console.log(`  ⚠️  Insufficient balance to create more markets. Stopping at ${marketsCreated} markets.\n`);
+      break;
+    }
+
     try {
-      console.log(`  Creating market: ${market.title} (Wallet ${i + 2})...`);
-      console.log(`     Startup ID: ${startupId}, Stake: ${market.creatorStake} BNB`);
+      console.log(`  Creating market ${i + 1}/${marketsToCreate}: ${market.title}...`);
+      console.log(`     Stake: ${market.creatorStake} BNB, Startup: ${market.startupName || 'None'}`);
       
       const hash = await walletClient.writeContract({
         address: CONTRACT_ADDRESS,
         abi: MILESTONE_PREDICTION_ABI,
         functionName: 'createMarket',
-        args: [deadline, metadata, startupId],
+        args: [deadline, metadata, BigInt(0)], // startupId = 0 (no startup)
         value: creatorStake,
       });
 
@@ -351,6 +295,7 @@ async function main() {
           topics: marketCreatedEvent.topics,
         });
         const marketId = Number(decoded.args.marketId);
+        marketsCreated++;
         console.log(`  ✅ Market created with ID: ${marketId}`);
         console.log(`     Transaction: ${hash}\n`);
       } else {
@@ -359,16 +304,17 @@ async function main() {
       }
     } catch (error) {
       console.error(`  ❌ Failed to create market "${market.title}":`, error.message);
-      console.error(`     Full error:`, error);
-      throw error;
+      // Continue with next market instead of throwing
+      console.log(`     Continuing with next market...\n`);
     }
   }
 
+  const finalBalance = await publicClient.getBalance({ address: mainWallet.address });
   console.log('═══════════════════════════════════════════════════════════════');
   console.log('✅ Seed script completed successfully!');
   console.log('═══════════════════════════════════════════════════════════════');
-  console.log(`📊 Created ${startupIds.length} startups`);
-  console.log(`📊 Created ${FEATURED_MARKETS.length} markets`);
+  console.log(`📊 Created ${marketsCreated} markets`);
+  console.log(`💰 Remaining balance: ${formatEther(finalBalance)} BNB`);
   console.log(`💾 Wallet details saved to: ${walletsPath}`);
   console.log('═══════════════════════════════════════════════════════════════\n');
 }
