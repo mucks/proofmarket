@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import { useReadContract, useReadContracts } from 'wagmi';
+import { useState, useMemo, useEffect } from 'react';
+import { useReadContract, useReadContracts, useChainId } from 'wagmi';
 import { MILESTONE_PREDICTION_ADDRESS, MILESTONE_PREDICTION_ABI } from '@/lib/web3/contracts';
 import { Market, MarketMetadata, MarketState, MarketCategory } from '@/lib/types';
 import { MarketCard } from '@/components/MarketCard';
@@ -24,13 +24,29 @@ export default function MarketsPage() {
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
   const [sortBy, setSortBy] = useState<SortType>('deadline');
   const [selectedCategory, setSelectedCategory] = useState<MarketCategory | undefined>();
+  
+  const chainId = useChainId();
 
   // Read total market count
-  const { data: marketCount } = useReadContract({
+  const { data: marketCount, error: marketCountError, isLoading: isLoadingCount } = useReadContract({
     address: MILESTONE_PREDICTION_ADDRESS,
     abi: MILESTONE_PREDICTION_ABI,
     functionName: 'marketCount',
   });
+
+  // Debug logging
+  useEffect(() => {
+    if (marketCountError) {
+      console.error('Error reading marketCount:', marketCountError);
+    }
+    console.log('Market Debug:', {
+      contractAddress: MILESTONE_PREDICTION_ADDRESS,
+      chainId,
+      marketCount: marketCount?.toString(),
+      isLoadingCount,
+      error: marketCountError?.message,
+    });
+  }, [marketCount, marketCountError, isLoadingCount, chainId]);
 
   const totalMarkets = Number(marketCount ?? BigInt(0));
 
@@ -191,6 +207,28 @@ export default function MarketsPage() {
           <Button>Create Market</Button>
         </Link>
       </div>
+
+      {/* Error Display */}
+      {marketCountError && (
+        <div className="mb-6 p-4 bg-red-500 border-4 border-black neobrutal-shadow">
+          <h3 className="text-xl font-black uppercase text-white mb-2">⚠️ Connection Error</h3>
+          <p className="text-white font-bold text-sm mb-2">
+            Failed to read contract: {marketCountError.message}
+          </p>
+          <div className="text-white text-xs space-y-1">
+            <p>• Contract: {MILESTONE_PREDICTION_ADDRESS}</p>
+            <p>• Network: Chain ID {chainId} {chainId === 97 ? '(BSC Testnet)' : chainId === 56 ? '(BSC Mainnet)' : '(Unknown)'}</p>
+            <p>• Make sure your wallet is connected to the correct network where the contract is deployed</p>
+          </div>
+        </div>
+      )}
+
+      {/* Loading State */}
+      {isLoadingCount && !marketCountError && (
+        <div className="mb-6 p-4 bg-blue-500 border-4 border-black neobrutal-shadow">
+          <p className="text-white font-bold">Loading markets...</p>
+        </div>
+      )}
 
       <MarketFilters
         searchQuery={searchQuery}
