@@ -18,12 +18,12 @@ export const networks = [bscTestnet, bsc];
 
 // Set up Wagmi Adapter (Config)
 // Note: projectId will be validated at runtime, but we need a non-empty string for build
+// Note: networks array order determines default - bscTestnet first
 export const wagmiAdapter = new WagmiAdapter({
   storage: createStorage({ storage: cookieStorage }),
   ssr: true,
   projectId,
   networks,
-  defaultNetwork: bscTestnet, // Default to BSC Testnet for both local and production
   transports: {
     [bscTestnet.id]: http(),
     [bsc.id]: http(),
