@@ -173,7 +173,7 @@ export function WaitlistForm() {
           </div>
 
           {/* Waitlist Form */}
-          <Card className="max-w-3xl mx-auto p-8 border-4 border-black neobrutal-shadow">
+          <Card className="max-w-3xl mx-auto p-6 border-4 border-black neobrutal-shadow">
             {submitSuccess && (
               <div className="mb-6 p-4 bg-green-500 border-4 border-black">
                 <p className="text-sm text-white font-black uppercase">
@@ -191,12 +191,12 @@ export function WaitlistForm() {
             )}
 
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <FormField
                   control={form.control}
                   name="name"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="space-y-2">
                       <FormLabel className="text-white">Your Name *</FormLabel>
                       <FormControl>
                         <Input
@@ -214,7 +214,7 @@ export function WaitlistForm() {
                   control={form.control}
                   name="email"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="space-y-2">
                       <FormLabel className="text-white">Email Address *</FormLabel>
                       <FormControl>
                         <Input
@@ -233,7 +233,7 @@ export function WaitlistForm() {
                   control={form.control}
                   name="walletAddress"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="space-y-2">
                       <FormLabel className="text-white">Wallet Address (Optional)</FormLabel>
                       <FormControl>
                         <Input
@@ -251,33 +251,33 @@ export function WaitlistForm() {
                   control={form.control}
                   name="role"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="space-y-2">
                       <FormLabel className="text-white">Are you a: *</FormLabel>
                       <FormControl>
                         <RadioGroup
                           onValueChange={field.onChange}
                           value={field.value}
-                          className="space-y-3"
+                          className="space-y-2 mt-1"
                         >
-                          <div className="flex items-center space-x-3">
+                          <div className="flex items-center space-x-2">
                             <RadioGroupItem value="founder" id="founder" className="border-2 border-black" />
-                            <label htmlFor="founder" className="font-medium cursor-pointer text-white text-base">Founder</label>
+                            <label htmlFor="founder" className="font-medium cursor-pointer text-white text-sm">Founder</label>
                           </div>
-                          <div className="flex items-center space-x-3">
+                          <div className="flex items-center space-x-2">
                             <RadioGroupItem value="investor" id="investor" className="border-2 border-black" />
-                            <label htmlFor="investor" className="font-medium cursor-pointer text-white text-base">Investor</label>
+                            <label htmlFor="investor" className="font-medium cursor-pointer text-white text-sm">Investor</label>
                           </div>
-                          <div className="flex items-center space-x-3">
+                          <div className="flex items-center space-x-2">
                             <RadioGroupItem value="vc-accelerator" id="vc-accelerator" className="border-2 border-black" />
-                            <label htmlFor="vc-accelerator" className="font-medium cursor-pointer text-white text-base">VC / Accelerator</label>
+                            <label htmlFor="vc-accelerator" className="font-medium cursor-pointer text-white text-sm">VC / Accelerator</label>
                           </div>
-                          <div className="flex items-center space-x-3">
+                          <div className="flex items-center space-x-2">
                             <RadioGroupItem value="trader" id="trader" className="border-2 border-black" />
-                            <label htmlFor="trader" className="font-medium cursor-pointer text-white text-base">Trader</label>
+                            <label htmlFor="trader" className="font-medium cursor-pointer text-white text-sm">Trader</label>
                           </div>
-                          <div className="flex items-center space-x-3">
+                          <div className="flex items-center space-x-2">
                             <RadioGroupItem value="community-member" id="community-member" className="border-2 border-black" />
-                            <label htmlFor="community-member" className="font-medium cursor-pointer text-white text-base">Community Member</label>
+                            <label htmlFor="community-member" className="font-medium cursor-pointer text-white text-sm">Community Member</label>
                           </div>
                         </RadioGroup>
                       </FormControl>
@@ -290,18 +290,18 @@ export function WaitlistForm() {
                   control={form.control}
                   name="features"
                   render={() => (
-                    <FormItem>
+                    <FormItem className="space-y-2">
                       <FormLabel className="text-white">
                         What features interest you most? (Select all that apply)
                       </FormLabel>
-                      <div className="space-y-3 mt-2">
+                      <div className="space-y-2 mt-1">
                         {features.map((feature) => (
                           <FormField
                             key={feature.id}
                             control={form.control}
                             name="features"
                             render={({ field }) => (
-                              <FormItem className="flex items-center space-x-3">
+                              <FormItem className="flex items-center space-x-2">
                                 <FormControl>
                                   <Checkbox
                                     checked={field.value?.includes(feature.id)}
@@ -314,7 +314,7 @@ export function WaitlistForm() {
                                     className="border-2 border-black"
                                   />
                                 </FormControl>
-                                <FormLabel className="font-medium cursor-pointer !normal-case !font-normal text-white text-base">
+                                <FormLabel className="font-medium cursor-pointer !normal-case !font-normal text-white text-sm">
                                   {feature.label}
                                 </FormLabel>
                               </FormItem>
@@ -330,25 +330,25 @@ export function WaitlistForm() {
                   control={form.control}
                   name="willPay"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="space-y-2">
                       <FormLabel className="text-white">Would you pay for premium features? *</FormLabel>
                       <FormControl>
                         <RadioGroup
                           onValueChange={field.onChange}
                           value={field.value}
-                          className="space-y-3"
+                          className="space-y-2 mt-1"
                         >
-                          <div className="flex items-center space-x-3">
+                          <div className="flex items-center space-x-2">
                             <RadioGroupItem value="yes" id="yes" className="border-2 border-black" />
-                            <label htmlFor="yes" className="font-medium cursor-pointer text-white text-base">Yes</label>
+                            <label htmlFor="yes" className="font-medium cursor-pointer text-white text-sm">Yes</label>
                           </div>
-                          <div className="flex items-center space-x-3">
+                          <div className="flex items-center space-x-2">
                             <RadioGroupItem value="maybe" id="maybe" className="border-2 border-black" />
-                            <label htmlFor="maybe" className="font-medium cursor-pointer text-white text-base">Maybe</label>
+                            <label htmlFor="maybe" className="font-medium cursor-pointer text-white text-sm">Maybe</label>
                           </div>
-                          <div className="flex items-center space-x-3">
+                          <div className="flex items-center space-x-2">
                             <RadioGroupItem value="no" id="no" className="border-2 border-black" />
-                            <label htmlFor="no" className="font-medium cursor-pointer text-white text-base">No</label>
+                            <label htmlFor="no" className="font-medium cursor-pointer text-white text-sm">No</label>
                           </div>
                         </RadioGroup>
                       </FormControl>
@@ -361,7 +361,7 @@ export function WaitlistForm() {
                   control={form.control}
                   name="additionalInfo"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="space-y-2">
                       <FormLabel className="text-white">
                         Anything else you'd like to use Ship or Die PRO for?
                       </FormLabel>
@@ -390,23 +390,15 @@ export function WaitlistForm() {
             </Form>
           </Card>
 
-          {/* Footer Section with View Waitlist Button */}
-          <div className="max-w-3xl mx-auto mt-16 text-center">
-            <Card className="p-8 border-4 border-black neobrutal-shadow bg-gradient-to-r from-[#3772FF]/10 to-[#8B5CF6]/10">
-              <div className="flex flex-col items-center gap-4">
-                <p className="text-lg font-bold text-white">
-                  Already signed up? View the waitlist
-                </p>
-                <Button
-                  onClick={() => setShowAdminLogin(true)}
-                  variant="outline"
-                  className="border-4 border-black neobrutal-shadow font-bold uppercase"
-                >
-                  <Lock className="mr-2 h-5 w-5" />
-                  View Waitlist (Admin)
-                </Button>
-              </div>
-            </Card>
+          {/* Small Admin Button at Bottom */}
+          <div className="max-w-3xl mx-auto mt-12 pb-8 text-center">
+            <button
+              onClick={() => setShowAdminLogin(true)}
+              className="text-xs text-gray-400 hover:text-gray-300 font-medium uppercase tracking-wide transition-colors"
+            >
+              <Lock className="inline h-3 w-3 mr-1" />
+              Admin
+            </button>
           </div>
         </div>
       </main>
